@@ -2,13 +2,12 @@ import streamlit as st
 import cv2
 import numpy as np
 import plotly.graph_objects as go
-from scipy.signal import find_peaks
 
 # -------------------------------------------------
 # SETUP
 # -------------------------------------------------
 st.set_page_config(page_title="Spektrometer", layout="wide")
-st.title("📡 Spektrometer Web App (Hover + Peaks)")
+st.title("📡 Spektrometer Web App")
 
 # -------------------------------------------------
 # SESSION STATE
@@ -37,7 +36,7 @@ if st.session_state.img is None:
 img = st.session_state.img
 
 # -------------------------------------------------
-# ROI SELECTION (SLIDER + OVERLAY)
+# ROI SELECTION
 # -------------------------------------------------
 st.subheader("📐 ROI Auswahl")
 
@@ -48,10 +47,10 @@ y1, y2 = st.slider("Y Bereich", 0, h, (0, h))
 
 roi = img[y1:y2, x1:x2]
 
-# Overlay Darstellung
+# Overlay
 preview = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-
 overlay = preview.copy()
+
 cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 255, 0), -1)
 preview = cv2.addWeighted(overlay, 0.25, preview, 0.75, 0)
 cv2.rectangle(preview, (x1, y1), (x2, y2), (0, 255, 0), 2)
@@ -65,36 +64,19 @@ if roi.size == 0:
 # -------------------------------------------------
 # SPEKTRUM
 # -------------------------------------------------
-st.subheader("📈 Spektrum (Hover aktiv)")
+st.subheader("📈 Spektrum")
 
 intensity = np.mean(roi, axis=0)
 pixel = np.arange(len(intensity))
 
-# Peak Detection (roh, ohne smoothing)
-peaks, _ = find_peaks(intensity, distance=10)
-
-# -------------------------------------------------
-# PLOTLY (INTERAKTIV MIT HOVER)
-# -------------------------------------------------
 fig = go.Figure()
 
-# Spektrum Linie
 fig.add_trace(go.Scatter(
     x=pixel,
     y=intensity,
     mode="lines",
     name="Spektrum",
     hovertemplate="Pixel: %{x}<br>Intensität: %{y}<extra></extra>"
-))
-
-# Peaks
-fig.add_trace(go.Scatter(
-    x=pixel[peaks],
-    y=intensity[peaks],
-    mode="markers",
-    name="Peaks",
-    marker=dict(color="red", size=8),
-    hovertemplate="Peak<br>Pixel: %{x}<br>Intensität: %{y}<extra></extra>"
 ))
 
 fig.update_layout(
@@ -109,24 +91,20 @@ st.plotly_chart(fig, use_container_width=True)
 # -------------------------------------------------
 # KALIBRIERUNG
 # -------------------------------------------------
-st.subheader("📍 Kalibrierung (2 Peaks auswählen)")
+st.subheader("📍 Kalibrierung (2 Punkte wählen)")
 
-if len(peaks) >= 2:
+p1 = st.number_input("Pixel 1", 0, len(pixel)-1, 10)
+l1 = st.number_input("Wellenlänge 1 (nm)", value=500.0)
 
-    p1 = st.selectbox("Peak 1", peaks)
-    p2 = st.selectbox("Peak 2", peaks)
+p2 = st.number_input("Pixel 2", 0, len(pixel)-1, 100)
+l2 = st.number_input("Wellenlänge 2 (nm)", value=600.0)
 
-    l1 = st.number_input("Wellenlänge Peak 1 (nm)", value=500.0)
-    l2 = st.number_input("Wellenlänge Peak 2 (nm)", value=600.0)
-
-    if st.button("Kalibrieren"):
-
-        if p1 != p2:
-            a = (l2 - l1) / (p2 - p1)
-            b = l1 - a * p1
-
-            st.session_state.calib = (a, b)
-            st.success("Kalibriert!")
+if st.button("Kalibrieren"):
+    if p1 != p2:
+        a = (l2 - l1) / (p2 - p1)
+        b = l1 - a * p1
+        st.session_state.calib = (a, b)
+        st.success("Kalibriert!")
 
 # -------------------------------------------------
 # KALIBRIERTES SPEKTRUM
