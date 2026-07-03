@@ -2,4 +2,4 @@ streamlit
 numpy
 opencv-python-headless
 matplotlib
-streamlit-drawable-canvas==0.9.3
+streamlit-drawable-canvas
