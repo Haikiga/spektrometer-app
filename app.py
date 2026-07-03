@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 # SETUP
 # -------------------------------------------------
 st.set_page_config(page_title="Spektrometer", layout="wide")
-st.title("📡 Spektrometer Web App")
+st.title("Spektrometer Web App")
 
 # -------------------------------------------------
 # SESSION STATE
@@ -38,7 +38,7 @@ img = st.session_state.img
 # -------------------------------------------------
 # ROI SELECTION
 # -------------------------------------------------
-st.subheader("📐 ROI Auswahl")
+st.subheader("Bereich Auswählen")
 
 h, w = img.shape
 
@@ -64,7 +64,7 @@ if roi.size == 0:
 # -------------------------------------------------
 # SPEKTRUM
 # -------------------------------------------------
-st.subheader("📈 Spektrum")
+st.subheader("Spektrum")
 
 intensity = np.mean(roi, axis=0)
 pixel = np.arange(len(intensity))
@@ -91,7 +91,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -------------------------------------------------
 # KALIBRIERUNG
 # -------------------------------------------------
-st.subheader("📍 Kalibrierung (2 Punkte wählen)")
+st.subheader("Kalibrierung (2 Punkte wählen)")
 
 p1 = st.number_input("Pixel 1", 0, len(pixel)-1, 10)
 l1 = st.number_input("Wellenlänge 1 (nm)", value=500.0)
@@ -111,7 +111,7 @@ if st.button("Kalibrieren"):
 # -------------------------------------------------
 if st.session_state.calib is not None:
 
-    st.subheader("🌈 Wellenlängen-Spektrum")
+    st.subheader("Wellenlängen-Spektrum")
 
     a, b = st.session_state.calib
     wavelength = a * pixel + b
@@ -137,7 +137,7 @@ if st.session_state.calib is not None:
 # -------------------------------------------------
 # CSV EXPORT
 # -------------------------------------------------
-st.subheader("💾 Export")
+st.subheader("Export")
 
 mode = st.selectbox("X-Achse", ["Pixel", "Wellenlänge (nm)"])
 
